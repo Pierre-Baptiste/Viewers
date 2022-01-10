@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { hot } from 'react-hot-loader/root';
-
+import qs from 'querystring';
 import OHIFCornerstoneExtension from '@ohif/extension-cornerstone';
 
 import {
@@ -122,9 +122,31 @@ class App extends Component {
       routerBasename: '/',
     };
 
+    let { search } = window.location;
+
+    // Remove ? prefix which is included for some reason
+    search = search.slice(1, search.length);
+    const query = qs.parse(search);
+
     this._appConfig = {
       ...appDefaultConfig,
       ...(typeof config === 'function' ? config({ servicesManager }) : config),
+      servers: {
+        dicomWeb: [
+          {
+            name: 'LocalStatic',
+            wadoUriRoot: query.url,
+            qidoRoot: query.url,
+            wadoRoot: query.url,
+            qidoSupportsIncludeField: false,
+            imageRendering: 'wadors',
+            thumbnailRendering: 'thumbnail',
+            enableStudyLazyLoad: true,
+            supportsFuzzyMatching: false,
+            staticWado: true,
+          },
+        ],
+      },
     };
 
     const {
